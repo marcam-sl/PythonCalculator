@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Work\\\\Customers\\\\Dell ISG\\\\DAP Team\\\\Python\\\\PythonCalculator\\\\app\\\\routers\")",
+      "Bash(Out-Null)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Work\\\\Customers\\\\Dell ISG\\\\DAP Team\\\\Python\\\\PythonCalculator\\\\tests\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Work\\\\Customers\\\\Dell ISG\\\\DAP Team\\\\Python\\\\PythonCalculator\\\\.github\\\\workflows\")",
+      "Bash(Write-Output \"Directories created\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Work\\\\Customers\\\\Dell ISG\\\\DAP Team\\\\Python\\\\PythonCalculator\\\\app\\\\routers\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Work\\\\Customers\\\\Dell ISG\\\\DAP Team\\\\Python\\\\PythonCalculator\\\\tests\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Work\\\\Customers\\\\Dell ISG\\\\DAP Team\\\\Python\\\\PythonCalculator\\\\.github\\\\workflows\")",
+      "PowerShell(Get-ChildItem -Recurse \"C:\\\\Work\\\\Customers\\\\Dell ISG\\\\DAP Team\\\\Python\\\\PythonCalculator\" | Where-Object { !$_.PSIsContainer } | Select-Object -ExpandProperty FullName | ForEach-Object { $_.Replace\\(\"C:\\\\Work\\\\Customers\\\\Dell ISG\\\\DAP Team\\\\Python\\\\PythonCalculator\\\\\", \"\"\\) })",
+      "mcp__mcp-registry__list_connectors",
+      "Bash(claude mcp *)",
+      "Read(//c/Users/maram/AppData/Roaming/**)",
+      "Read(//c/Users/maram/AppData/Local/**)",
+      "Read(//c/Users/maram/AppData/Local/Programs/**)",
+      "Read(//c/Users/maram/AppData/**)",
+      "Bash(wsl --list --verbose)",
+      "Read(//c/Users/maram/**)",
+      "Read(//mnt/c/Users/maram/.claude/**)",
+      "Bash(wsl -d Ubuntu-24.04 -- bash -c \"ls ~/.claude/settings.json 2>/dev/null && echo 'exists' || echo 'no settings.json in WSL2 home'\")",
+      "Bash(dpkg --print-architecture)",
+      "Bash(wsl -d Ubuntu-24.04 -- bash -c ' *)",
+      "Bash(wsl -d Ubuntu-24.04 -- bash -c \"gh --version 2>/dev/null && echo OK || echo 'not yet'\")",
+      "PowerShell(wsl -d Ubuntu-24.04 -- bash -c \"sudo apt-get update -q && sudo apt-get install -y gh 2>&1\" ; Write-Output \"Exit: $LASTEXITCODE\")"
+    ]
+  }
+}

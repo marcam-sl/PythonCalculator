@@ -1,0 +1,212 @@
+name: Calculator CI - SeaLights
+
+on:
+  # push:
+  # pull_request:
+  workflow_dispatch:
+
+env:
+  SEALIGHTS_ENABLED: 'true'   # set to 'false' to skip SeaLights steps
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+  PYTHON_VERSION: '3.14'
+  SEALIGHTS_TOKEN: ${{ secrets.SL_AGENT_TOKEN }}
+  SEALIGHTS_LOG_LEVEL: 'info'
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # BUILD — install deps, optionally instrument with SeaLights, upload workspace
+  # ──────────────────────────────────────────────────────────────────────────
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      build_session_id: ${{ steps.sealights-bsid.outputs.build_session_id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      # --------------------------------------------------------
+      # Standard build verification (skipped when SL is enabled)
+      # --------------------------------------------------------
+      - name: Verify import
+        if: env.SEALIGHTS_ENABLED != 'true'
+        run: python -c "from app.main import app; print('Import OK')"
+
+      # --------------------------------------------------------
+      # SeaLights — agent download
+      # --------------------------------------------------------
+      - name: SeaLights - Agent download
+        if: env.SEALIGHTS_ENABLED == 'true'
+        run: |
+          # TODO: replace with the correct Python agent download URL when available
+          echo "[SeaLights] Downloading SeaLights Python Agent..."
+          # pip install sealights-python-agent   # placeholder
+          echo "[SeaLights] Agent download complete (placeholder)"
+
+      # --------------------------------------------------------
+      # SeaLights — config & scan (instrumentation)
+      # --------------------------------------------------------
+      - name: SeaLights - Config & Scan
+        if: env.SEALIGHTS_ENABLED == 'true'
+        id: sealights-bsid
+        env:
+          SEALIGHTS_APP_NAME: ${{ github.event.repository.name }}
+          SEALIGHTS_BRANCH: ${{ github.ref_name }}
+          SEALIGHTS_BUILD: "${{ github.run_number }} - ${{ github.sha }}"
+        run: |
+          # TODO: run the SeaLights Python agent config + scan commands, e.g.:
+          # slpythonagent config --token $SEALIGHTS_TOKEN --save-bsid-to-file bsid.txt
+          # slpythonagent scan
+          echo "build_session_id=placeholder-bsid-${{ github.run_number }}" >> $GITHUB_OUTPUT
+          echo "[SeaLights] Config & Scan complete (placeholder)"
+
+      # --------------------------------------------------------
+      # Upload workspace (instrumented or plain) for test jobs
+      # --------------------------------------------------------
+      - name: Upload workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace
+          path: .
+          compression-level: 6
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # UNIT TESTS — run in parallel with component-tests
+  # ──────────────────────────────────────────────────────────────────────────
+  unit-tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      # --------------------------------------------------------
+      # SeaLights — start test session
+      # --------------------------------------------------------
+      - name: SeaLights - Start Unit Test session
+        if: env.SEALIGHTS_ENABLED == 'true'
+        env:
+          SEALIGHTS_TEST_STAGE: 'Unit Tests'
+        run: |
+          # TODO: slpythonagent test-start --test-stage "$SEALIGHTS_TEST_STAGE"
+          echo "[SeaLights] Unit Test session started (placeholder)"
+
+      - name: Run Unit Tests
+        env:
+          SEALIGHTS_TEST_STAGE: 'Unit Tests'
+        run: pytest tests/test_calculator.py -v --tb=short
+
+      # --------------------------------------------------------
+      # SeaLights — end test session
+      # --------------------------------------------------------
+      - name: SeaLights - End Unit Test session
+        if: env.SEALIGHTS_ENABLED == 'true'
+        env:
+          SEALIGHTS_TEST_STAGE: 'Unit Tests'
+        run: |
+          # TODO: slpythonagent test-end --test-stage "$SEALIGHTS_TEST_STAGE"
+          echo "[SeaLights] Unit Test session ended (placeholder)"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # COMPONENT TESTS — run in parallel with unit-tests
+  # ──────────────────────────────────────────────────────────────────────────
+  component-tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      # --------------------------------------------------------
+      # SeaLights — start test session
+      # --------------------------------------------------------
+      - name: SeaLights - Start Component Test session
+        if: env.SEALIGHTS_ENABLED == 'true'
+        env:
+          SEALIGHTS_TEST_STAGE: 'Component Tests'
+        run: |
+          # TODO: slpythonagent test-start --test-stage "$SEALIGHTS_TEST_STAGE"
+          echo "[SeaLights] Component Test session started (placeholder)"
+
+      - name: Run Component Tests
+        env:
+          SEALIGHTS_TEST_STAGE: 'Component Tests'
+        run: pytest tests/test_api.py -v --tb=short
+
+      # --------------------------------------------------------
+      # SeaLights — end test session
+      # --------------------------------------------------------
+      - name: SeaLights - End Component Test session
+        if: env.SEALIGHTS_ENABLED == 'true'
+        env:
+          SEALIGHTS_TEST_STAGE: 'Component Tests'
+        run: |
+          # TODO: slpythonagent test-end --test-stage "$SEALIGHTS_TEST_STAGE"
+          echo "[SeaLights] Component Test session ended (placeholder)"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # SEALIGHTS QUALITY GATE — waits for both test jobs, then checks coverage
+  # ──────────────────────────────────────────────────────────────────────────
+  sealights-quality-gate:
+    needs: [build, unit-tests, component-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: SeaLights - Wait for Data Ready
+        env:
+          SEALIGHTS_DOMAIN: 'gitlab-demo'
+        run: |
+          # TODO: replace with the real quality-gate script once available, e.g.:
+          # python -u scripts/sealights-utils.py \
+          #   "${{ needs.build.outputs.build_session_id }}" \
+          #   "${{ secrets.SL_API_TOKEN }}" \
+          #   "Unit Tests" "Component Tests"
+          echo "[SeaLights] Quality gate check (placeholder) for BSID: ${{ needs.build.outputs.build_session_id }}"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # FINALIZE
+  # ──────────────────────────────────────────────────────────────────────────
+  finalize:
+    needs: [sealights-quality-gate]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pipeline Complete
+        run: echo "End of pipeline"
